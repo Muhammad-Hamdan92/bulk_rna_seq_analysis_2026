@@ -1,0 +1,16 @@
+cat > .gitignore << 'EOF'
+00_raw_reads/*.fastq.gz
+00_raw_reads/*.fq.gz
+02_process_reads/*.fastq.gz
+00_reference_genome/*.fa
+00_reference_genome/*.fasta
+00_reference_genome/*.fa.gz
+00_reference_genome/*.gtf
+04_star_index/
+05_star_result/*/*.bam
+05_star_result/*/*.bam.bai
+01_qc_before_processing/fastqc/*_fastqc/
+03_qc_after_processing/fastqc/*_fastqc/
+*.log
+.DS_Store
+EOF

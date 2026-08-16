@@ -1,16 +1,12 @@
-cat > .gitignore << 'EOF'
-00_raw_reads/*.fastq.gz
-00_raw_reads/*.fq.gz
-02_process_reads/*.fastq.gz
-00_reference_genome/*.fa
-00_reference_genome/*.fasta
-00_reference_genome/*.fa.gz
-00_reference_genome/*.gtf
+# Ignore entire data/results folders
+00_raw_reads/
+00_reference_genome/
+01_qc_before_processing/
+02_processed_reads/
+03_qc_after_processing/
 04_star_index/
-05_star_result/*/*.bam
-05_star_result/*/*.bam.bai
-01_qc_before_processing/fastqc/*_fastqc/
-03_qc_after_processing/fastqc/*_fastqc/
+05_star_result/
+
+# Ignore log files and system files
 *.log
 .DS_Store
-EOF

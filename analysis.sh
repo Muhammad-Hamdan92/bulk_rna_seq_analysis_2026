@@ -15,7 +15,8 @@ RAW_READS_DIR="${PROJECT_DIR}/00_raw_reads"
 REFERENCE_GENOME_DIR="${PROJECT_DIR}/00_reference_genome"
 SAMPLES="SRR3734796 SRR3734797 SRR3734798 SRR3734816 SRR3734817 SRR3734818"  ##EDIT ACCORDING TO YOUR READS
 THREADS=3  #EDIT ACCORDING TO CPU THREADS YOU HAVE
-
+SJDB_OVERHANG=99
+RAM_USAGE=10000000000
 #===========================================================================================
 #CREATING DIRECTORIES
 #===========================================================================================
@@ -152,9 +153,26 @@ echo "processed reads quality report completed"
 echo "-------------------------------------------------------------------------------------------"
 
 #===========================================================================================
-#CREATING STAR INDEX AND ALIGNING THE READS
+#CREATING STAR INDEX 
 #===========================================================================================
+cd "${PROJECT_DIR}/04_star_index"
+conda activate 03_star
 
+
+STAR --runMode genomeGenerate \
+    --genomeDir "${PROJECT_DIR}/04_star_index" \
+    --genomeFastaFiles "${PROJECT_DIR}/00_reference_genome/mouse_reference.fa" \
+    --sjdbGTFfile "${PROJECT_DIR}/00_reference_genome/mouse_reference.gtf" \
+    --sjdbOverhang "${SJDB_OVERHANG}" \
+    --runThreadN "${THREADS}" \
+    --limitGenomeGenerateRAM "${RAM_USAGE}"
+echo "-------------------------------------------------------------------------------------------"
+echo "STAR genome index built at ${PROJECT_DIR}/04_star_index"
+echo "-------------------------------------------------------------------------------------------"
+
+#===========================================================================================
+#ALIGNING THE READS STAR INDEX PER SAMPLE
+#===========================================================================================
 exit 0
 
 

@@ -174,6 +174,8 @@ echo "--------------------------------------------------------------------------
 
 #===========================================================================================
 #ALIGNING THE READS STAR INDEX PER SAMPLESTAR \
+#===========================================================================================
+
 echo "------------------------------------------------------------------------------------------"
 echo "Aligning reads with STAR"
 echo "------------------------------------------------------------------------------------------"
@@ -193,15 +195,32 @@ for s in ${SAMPLES}; do
         --outSAMstrandField intronMotif \
         --quantMode GeneCounts \
         --runThreadN "${THREADS}" \
-        --outFileNamePrefix "${PROJECT_DIR}/05_star_result/${s}/${s}_"
+        --outFileNamePrefix "${PROJECT_DIR}/05_star_result/${s}/${s}_" \
+        --limitBAMsortRAM "${RAM_USAGE}"
+done
 
+#===========================================================================================
+
+echo "------------------------------------------------------------------------------------------"
+echo "samtool indexing and flagstat is running"
+echo "------------------------------------------------------------------------------------------"
+
+echo "------------------------------------------------------------------------------------------"
+echo "04_samtool is activated"
+echo "------------------------------------------------------------------------------------------"
+
+conda activate 04_sammtools
+
+for s in ${SAMPLES}; do
     echo "  -> Indexing + flagstat for ${s}"
     samtools index "${PROJECT_DIR}/05_star_result/${s}/${s}_Aligned.sortedByCoord.out.bam"
     samtools flagstat "${PROJECT_DIR}/05_star_result/${s}/${s}_Aligned.sortedByCoord.out.bam" \
         > "${PROJECT_DIR}/05_star_result/samtool_qc/${s}.flagstat.txt"
 done
 
+echo "------------------------------------------------------------------------------------------"
 echo "STAR alignment complete. Results are in ${PROJECT_DIR}/05_star_result"
+echo "------------------------------------------------------------------------------------------"
 #===========================================================================================
 exit 0
 

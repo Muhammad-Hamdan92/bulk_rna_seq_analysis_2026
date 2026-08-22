@@ -79,7 +79,7 @@ echo "---------------------------------------------------------"
 echo "installing samtools"
 echo "---------------------------------------------------------"
 
-conda install bioconda::samtools
+conda install bioconda::samtools -y
 
 echo "---------------------------------------------------------"
 echo "samtools install successfully"

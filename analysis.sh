@@ -16,7 +16,7 @@ REFERENCE_GENOME_DIR="${PROJECT_DIR}/00_reference_genome"
 SAMPLES="SRR3734796 SRR3734797 SRR3734798 SRR3734816 SRR3734817 SRR3734818"  ##EDIT ACCORDING TO YOUR READS
 THREADS=3  #EDIT ACCORDING TO CPU THREADS YOU HAVE
 SJDB_OVERHANG=99
-RAM_USAGE=10000000000
+RAM_USAGE=8000000000
 #===========================================================================================
 #CREATING DIRECTORIES
 #===========================================================================================
@@ -165,13 +165,43 @@ STAR --runMode genomeGenerate \
     --sjdbGTFfile "${PROJECT_DIR}/00_reference_genome/mouse_reference.gtf" \
     --sjdbOverhang "${SJDB_OVERHANG}" \
     --runThreadN "${THREADS}" \
+    --genomeSAsparseD 3 \
+    --genomeSAindexNbases 13 \
     --limitGenomeGenerateRAM "${RAM_USAGE}"
 echo "-------------------------------------------------------------------------------------------"
 echo "STAR genome index built at ${PROJECT_DIR}/04_star_index"
 echo "-------------------------------------------------------------------------------------------"
 
 #===========================================================================================
-#ALIGNING THE READS STAR INDEX PER SAMPLE
+#ALIGNING THE READS STAR INDEX PER SAMPLESTAR \
+echo "------------------------------------------------------------------------------------------"
+echo "Aligning reads with STAR"
+echo "------------------------------------------------------------------------------------------"
+
+mkdir -p "${PROJECT_DIR}/05_star_result/samtool_qc"
+
+for s in ${SAMPLES}; do
+    echo "  -> Aligning ${s}"
+    mkdir -p "${PROJECT_DIR}/05_star_result/${s}"
+
+    STAR --runMode alignReads \
+        --genomeDir "${PROJECT_DIR}/04_star_index" \
+        --readFilesIn \
+            "${PROJECT_DIR}/02_processed_reads/${s}.fastq.gz" \
+        --readFilesCommand zcat \
+        --outSAMtype BAM SortedByCoordinate \
+        --outSAMstrandField intronMotif \
+        --quantMode GeneCounts \
+        --runThreadN "${THREADS}" \
+        --outFileNamePrefix "${PROJECT_DIR}/05_star_result/${s}/${s}_"
+
+    echo "  -> Indexing + flagstat for ${s}"
+    samtools index "${PROJECT_DIR}/05_star_result/${s}/${s}_Aligned.sortedByCoord.out.bam"
+    samtools flagstat "${PROJECT_DIR}/05_star_result/${s}/${s}_Aligned.sortedByCoord.out.bam" \
+        > "${PROJECT_DIR}/05_star_result/samtool_qc/${s}.flagstat.txt"
+done
+
+echo "STAR alignment complete. Results are in ${PROJECT_DIR}/05_star_result"
 #===========================================================================================
 exit 0
 

@@ -84,3 +84,20 @@ conda install bioconda::samtools -y
 echo "---------------------------------------------------------"
 echo "samtools install successfully"
 echo "---------------------------------------------------------"
+
+#===============================================================================
+#creating enviornment and installing psiclass
+#===============================================================================
+
+echo "---------------------------------------------------------"
+echo "creating env for psiclass and installing it"
+echo "---------------------------------------------------------"
+conda create -n 05_psiclass -y
+conda activate 05_psiclass
+
+echo "---------------------------------------------------------"
+conda install bioconda::psiclass -y
+
+echo "---------------------------------------------------------"
+echo "successfully install psiclass"
+echo "---------------------------------------------------------"

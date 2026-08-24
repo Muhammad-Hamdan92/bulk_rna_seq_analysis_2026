@@ -13,6 +13,7 @@ RAW_READS_SOURCE_DIR="/home/muhammad/Documents/Transcriptomics/00_raw_reads"
 REF_GENOME_SOURCE_DIR="/home/muhammad/Documents/Transcriptomics/reference_genome"
 RAW_READS_DIR="${PROJECT_DIR}/00_raw_reads"
 REFERENCE_GENOME_DIR="${PROJECT_DIR}/00_reference_genome"
+PSICLASS_DIR="${PROJECT_DIR}/06_psiclass_result"
 SAMPLES="SRR3734796 SRR3734797 SRR3734798 SRR3734816 SRR3734817 SRR3734818"  ##EDIT ACCORDING TO YOUR READS
 THREADS=3  #EDIT ACCORDING TO CPU THREADS YOU HAVE
 SJDB_OVERHANG=99
@@ -32,7 +33,8 @@ mkdir -p \
     "${PROJECT_DIR}/02_processed_reads" \
     "${PROJECT_DIR}/03_qc_after_processing" \
     "${PROJECT_DIR}/04_star_index" \
-    "${PROJECT_DIR}/05_star_result"
+    "${PROJECT_DIR}/05_star_result" \
+    "${PSICLASS_DIR}"
 
 echo "------------------------------------------------------------------------------------------"
 echo "Directories have created"
@@ -209,7 +211,7 @@ echo "--------------------------------------------------------------------------
 echo "04_samtool is activated"
 echo "------------------------------------------------------------------------------------------"
 
-conda activate 04_sammtools
+conda activate 04_samtools
 
 for s in ${SAMPLES}; do
     echo "  -> Indexing + flagstat for ${s}"
@@ -222,6 +224,35 @@ echo "--------------------------------------------------------------------------
 echo "STAR alignment complete. Results are in ${PROJECT_DIR}/05_star_result"
 echo "------------------------------------------------------------------------------------------"
 #===========================================================================================
+
+#===========================================================================================
+#ASSEMBLE THE TRANSCRIPT BY USING [MULTI ASSEMBLER]PSICALSS
+#===========================================================================================
+
+conda activate 05_psiclass
+
+# STAR writes one sorted BAM and index per sample directory.
+bam_list=""
+for s in ${SAMPLES}; do
+    bam_path="${PROJECT_DIR}/05_star_result/${s}/${s}_Aligned.sortedByCoord.out.bam"
+    if [[ ! -f "${bam_path}" ]]; then
+        echo "ERROR: STAR BAM not found: ${bam_path}" >&2
+        exit 1
+    fi
+    bam_list+="${bam_path},"
+done
+bam_list="${bam_list%,}"
+
+echo "BAM list: $bam_list"
+
+# Run PsiCLASS
+psiclass \
+    -b "${bam_list}" \
+    -o "${PSICLASS_DIR}/transcriptomics_2026" \
+    -p "${THREADS}" \
+    -s 0 \
+    -lb month_1,month_1,month_1,month_4,month_4,month_4
+  
 exit 0
 
 

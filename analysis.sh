@@ -34,7 +34,7 @@ mkdir -p \
     "${PROJECT_DIR}/03_qc_after_processing" \
     "${PROJECT_DIR}/04_star_index" \
     "${PROJECT_DIR}/05_star_result" \
-    "${PSICLASS_DIR}"
+    "${PROJECT_DIR}/06_psiclass_result"
 
 echo "------------------------------------------------------------------------------------------"
 echo "Directories have created"
@@ -251,7 +251,7 @@ psiclass \
     -o "${PSICLASS_DIR}/transcriptomics_2026" \
     -p "${THREADS}" \
     -s 0 \
-    -lb month_1,month_1,month_1,month_4,month_4,month_4
+    --lb month_1,month_1,month_1,month_4,month_4,month_4
   
 exit 0
 

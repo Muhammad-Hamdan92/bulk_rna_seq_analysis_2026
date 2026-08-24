@@ -6,6 +6,7 @@
 03_qc_after_processing/
 04_star_index/
 05_star_result/
+06_psiclass_result
 
 # Ignore log files and system files
 *.log

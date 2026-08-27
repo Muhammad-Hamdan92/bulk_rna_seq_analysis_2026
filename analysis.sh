@@ -250,8 +250,117 @@ psiclass \
     -b "${bam_list}" \
     -o "${PSICLASS_DIR}/transcriptomics_2026" \
     -p "${THREADS}" \
-    -s 0 \
-    --lb month_1,month_1,month_1,month_4,month_4,month_4
+    -s 0
+
+# ADD THE GENE NAMES BY USING PSICLASS
+echo "add gene name ........................."
+mkdir -p "${PROJECT_DIR}/06_psiclass_result/06.1_with_gene_names"
+
+ADDGENENAME="$(which add-genename)"
+ANNOTATE="${REFERENCE_GENOME_DIR}/mouse_reference.gtf"
+GENENAME_DIR="${PSICLASS_DIR}/06.1_with_gene_names"
+PSICLASS_GTF_LIST="${PSICLASS_DIR}/transcriptomics_2026_gtf.list"
+
+#"${ADDGENENAME}" \
+    #"${ANNOTATE}" \
+    #"${PSICLASS_GTF_LIST}" \
+    #-o "${GENENAME_DIR}"
+#===========================================================================================
+./annotation.sh     # USING BEDTOOLS FOR ANNOTATION
+#===========================================================================================
+
+
+
+
+#===========================================================================================
+#STATISTICALS ANALYSIS BEFORE GOING EXPRESSION ANALYSIS
+#[GENE COUNTS, TRANSCRIPT COUNTS, COMPARE THE ANNOTATED FILE WITH STRAND ANNOTATED]
+#===========================================================================================
+
+#COMPARE THE ANNOTATED FILE WITH STRAND ANNOTATED
+
+
+# ============================================================
+# GTF summary statistics: raw vs gene-named vs stranded
+#
+# Computes, for each GTF version:
+#   - total lines
+#   - unique genes   (unique gene_id values)
+#   - unique transcripts (unique transcript_id values)
+#   - genes with >1 transcript
+#
+# Same numbers as the manual `cut -d' ' -f2/-f4` pipeline, but
+# using grep -o on the gene_id/transcript_id patterns directly,
+# so it doesn't depend on attribute position or spacing (which
+# differs between vote.gtf, the 06.2 gene-named file, and the
+# 06.3 stranded file, since each adds different extra fields).
+# ============================================================
+
+# ---- Project directories ----
+PROJECT_DIR="${PROJECT_DIR:-$HOME/Documents/Transcriptomics/transcriptomics_2026}"
+PSICLASS_DIR="${PROJECT_DIR}/06_psiclass_result"
+
+VOTE_GTF="${PSICLASS_DIR}/transcriptomics_2026_vote.gtf"
+ANNOTATED_GTF="${PSICLASS_DIR}/06.2_vote_with_gene_names/transcriptomics_2026_vote.annotated.gtf"
+STRANDED_GTF="${PSICLASS_DIR}/06.3_vote_with_strand/transcriptomics_2026_vote.withStrand.gtf"
+
+OUT_DIR="${PSICLASS_DIR}/07_summary_stats"
+SUMMARY_TSV="${OUT_DIR}/gtf_summary_stats.tsv"
+
+mkdir -p "$OUT_DIR"
+
+echo "============================================================"
+echo "GTF summary statistics"
+echo "============================================================"
+
+printf "Version\tTotalLines\tNumGenes\tNumTranscripts\tNumGenes_gt1_txpt\n" > "$SUMMARY_TSV"
+
+# Raw PsiCLASS vote GTF
+raw_total_lines=$(wc -l < "$VOTE_GTF")
+raw_tx_lines=$(awk -F'\t' '$3=="transcript"' "$VOTE_GTF")
+raw_num_genes=$(echo "$raw_tx_lines" | grep -o 'gene_id "[^"]*"' | sort -u | wc -l)
+raw_num_transcripts=$(echo "$raw_tx_lines" | grep -o 'transcript_id "[^"]*"' | sort -u | wc -l)
+raw_num_multi_tx_genes=$(echo "$raw_tx_lines" | grep -o 'gene_id "[^"]*"; transcript_id "[^"]*"' | sort -u | grep -o 'gene_id "[^"]*"' | sort | uniq -c | awk '$1 > 1' | wc -l)
+printf "raw_vote\t%s\t%s\t%s\t%s\n" "$raw_total_lines" "$raw_num_genes" "$raw_num_transcripts" "$raw_num_multi_tx_genes" >> "$SUMMARY_TSV"
+
+# Gene-named GTF
+named_total_lines=$(wc -l < "$ANNOTATED_GTF")
+named_tx_lines=$(awk -F'\t' '$3=="transcript"' "$ANNOTATED_GTF")
+named_num_genes=$(echo "$named_tx_lines" | grep -o 'gene_id "[^"]*"' | sort -u | wc -l)
+named_num_transcripts=$(echo "$named_tx_lines" | grep -o 'transcript_id "[^"]*"' | sort -u | wc -l)
+named_num_multi_tx_genes=$(echo "$named_tx_lines" | grep -o 'gene_id "[^"]*"; transcript_id "[^"]*"' | sort -u | grep -o 'gene_id "[^"]*"' | sort | uniq -c | awk '$1 > 1' | wc -l)
+printf "gene_named_06.2\t%s\t%s\t%s\t%s\n" "$named_total_lines" "$named_num_genes" "$named_num_transcripts" "$named_num_multi_tx_genes" >> "$SUMMARY_TSV"
+
+# Stranded GTF
+stranded_total_lines=$(wc -l < "$STRANDED_GTF")
+stranded_tx_lines=$(awk -F'\t' '$3=="transcript"' "$STRANDED_GTF")
+stranded_num_genes=$(echo "$stranded_tx_lines" | grep -o 'gene_id "[^"]*"' | sort -u | wc -l)
+stranded_num_transcripts=$(echo "$stranded_tx_lines" | grep -o 'transcript_id "[^"]*"' | sort -u | wc -l)
+stranded_num_multi_tx_genes=$(echo "$stranded_tx_lines" | grep -o 'gene_id "[^"]*"; transcript_id "[^"]*"' | sort -u | grep -o 'gene_id "[^"]*"' | sort | uniq -c | awk '$1 > 1' | wc -l)
+printf "stranded_06.3\t%s\t%s\t%s\t%s\n" "$stranded_total_lines" "$stranded_num_genes" "$stranded_num_transcripts" "$stranded_num_multi_tx_genes" >> "$SUMMARY_TSV"
+
+echo
+echo "============================================================"
+echo "Summary table:"
+echo "============================================================"
+column -t -s $'\t' "$SUMMARY_TSV"
+
+echo
+echo "Saved to: $SUMMARY_TSV"
+echo
+echo "To open in Excel/LibreOffice, copy this file over and import"
+echo "as tab-delimited, or run:"
+echo "  cp \"$SUMMARY_TSV\" ~/Desktop/gtf_summary_stats.tsv"
+
+cd /home/muhammad/Documents/Transcriptomics/transcriptomics_2026
+wc -l 06_psiclass_result/06.2_vote_with_gene_names/transcriptomics_2026_vote.annotated.gtf
+wc -l 06_psiclass_result/06.3_vote_with_strand/transcriptomics_2026_vote.withStrand.gtf
+
+
+echo "gene name annotation is completed"
+
+
+echo "PsiCLASS assembly completed. Results are in ${PSICLASS_DIR}"
   
 exit 0
 

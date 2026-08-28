@@ -9,9 +9,9 @@ set -euo pipefail
 # conda activate 05_psiclass
 
 # ---- Project directories ----
-PROJECT_DIR="${PROJECT_DIR:-$HOME/Documents/Transcriptomics/transcriptomics_2026}"
+PROJECT_DIR="${HOME/Documents/Transcriptomics/transcriptomics_2026}"
 
-REFERENCE_GENOME_DIR="${REFERENCE_GENOME_DIR:-${PROJECT_DIR}/00_reference_genome}"
+REFERENCE_GENOME_DIR="${PROJECT_DIR}/00_reference_genome}"
 PSICLASS_DIR="${PSICLASS_DIR:-${PROJECT_DIR}/06_psiclass_result}"
 
 REFERENCE_GTF="${REFERENCE_GENOME_DIR}/mouse_reference.gtf"
